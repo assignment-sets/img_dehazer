@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Dehazing Result</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .image-comparison {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .image-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-title {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .image-container {
+            width: 500px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .download-btn {
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Image Dehazing Result</h1>
+        <div class="image-comparison">
+            <div class="image-card">
+                <div class="image-title">Original Image</div>
+                <div class="image-container">
+                    <img src="{{ original_image }}" alt="Original Image">
+                </div>
+            </div>
+            <div class="image-card">
+                <div class="image-title">Dehazed Image</div>
+                <div class="image-container">
+                    <img src="{{ dehazed_image }}" alt="Dehazed Image">
+                </div>
+            </div>
+        </div>
+        <div class="download-section">
+            <h2>Download Dehazed Image</h2>
+            <a href="/download_dehazed" download="dehazed_image.jpg" class="download-btn">Download</a>
+        </div>
+    </div>
+</body>
+
+</html>
