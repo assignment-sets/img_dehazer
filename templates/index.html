@@ -45,7 +45,7 @@
         <div
             class="max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 transform hover:scale-105 transition duration-300">
             <h2 class="text-3xl font-bold mb-8 text-center">Upload The Hazy Image</h2>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
+            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
                 <div id="drop-area"
                     class="border-4 border-dashed border-pink-600 rounded-lg p-12 text-center cursor-pointer hover:bg-gray-900 transition duration-300">
                     <div class="animate-pulse">
@@ -59,9 +59,14 @@
                         <p class="mt-2">or click to select</p>
                     </div>
                 </div>
-                <input type="file" id="fileElem" name="image" accept="image/*" class="hidden" required>
+                <input type="file" id="fileElem" name="image" accept="image/png, image/jpeg" class="hidden">
                 <div id="gallery" class="mt-8 grid gap-4"></div>
-                <button type="submit"
+
+                <!-- Error Message Div -->
+                <div id="error-message" class="text-pink-600 text-center" style="height: 0.8rem;"></div>
+
+                <!-- Spinner Button -->
+                <button id="submit-btn" type="submit"
                     class="mt-8 w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105">
                     Dehaze Image
                 </button>
@@ -70,14 +75,18 @@
     </main>
 
     <footer class="bg-gray-800 text-center p-3">
-        <p>&copy; 2024 Image Dehazing Tool.</p>
+        <p>&copy; 2024 Image Dehazing Tool Using Dehaze library (PyPi)</p>
     </footer>
 
     <script>
         let dropArea = document.getElementById('drop-area');
         let fileElem = document.getElementById('fileElem');
         let gallery = document.getElementById('gallery');
+        let submitBtn = document.getElementById('submit-btn');
+        let uploadForm = document.getElementById('upload-form');
+        let errorMessageDiv = document.getElementById('error-message');
 
+        // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, preventDefaults, false);
         });
@@ -87,10 +96,12 @@
             e.stopPropagation();
         }
 
+        // Highlight the drop area
         ['dragenter', 'dragover'].forEach(eventName => {
             dropArea.addEventListener(eventName, highlight, false);
         });
 
+        // Unhighlight the drop area
         ['dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, unhighlight, false);
         });
@@ -103,6 +114,7 @@
             dropArea.classList.remove('bg-deepPurple');
         }
 
+        // Handle file drop
         dropArea.addEventListener('drop', handleDrop, false);
         dropArea.addEventListener('click', () => fileElem.click());
         fileElem.addEventListener('change', () => handleFiles(fileElem.files));
@@ -114,16 +126,18 @@
             // Assign the file to the fileElem input
             fileElem.files = files;
 
-            // Preview the file as before
+            // Preview the file
             handleFiles(files);
         }
 
+        // Function to handle the files
         function handleFiles(files) {
             files = [...files];
             gallery.innerHTML = ''; // Clear previous images
             files.forEach(previewFile);
         }
 
+        // Function to preview the image
         function previewFile(file) {
             let reader = new FileReader();
             reader.readAsDataURL(file);
@@ -133,6 +147,52 @@
                 img.className = 'w-full h-48 object-cover rounded-lg';
                 gallery.appendChild(img);
             }
+        }
+
+        // Change button to loading state on form submit
+        uploadForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Validate file input file extension
+            const files = fileElem.files;
+            console.log(files);
+
+            if (files.length === 0) {
+                showError('! No file selected. Please upload an image.');
+                return;
+            }
+
+            const file = files[0];
+            const validExtensions = ['image/jpeg', 'image/png'];
+            if (!validExtensions.includes(file.type)) {
+                showError('! Invalid file type. Please upload an image (JPEG, PNG).');
+                return;
+            }
+
+            // Update button to loading state
+            submitBtn.innerHTML = `
+                <div role="status">
+                    <svg aria-hidden="true" class="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                    </svg>
+                    <span class="sr-only">Loading...</span>
+                </div>`;
+
+            submitBtn.disabled = true;
+
+            // Submit the form
+            uploadForm.submit();
+        });
+
+        // Function to display error messages
+        function showError(message) {
+            errorMessageDiv.textContent = message;
+
+            // Hide the error message after 3 seconds
+            setTimeout(() => {
+                errorMessageDiv.textContent = '';
+            }, 3000);
         }
     </script>
 </body>
