@@ -62,8 +62,14 @@
                 <input type="file" id="fileElem" name="image" accept="image/png, image/jpeg" class="hidden">
                 <div id="gallery" class="mt-8 grid gap-4"></div>
 
-                <!-- Error Message Div -->
-                <div id="error-message" class="text-pink-600 text-center" style="height: 0.8rem;"></div>
+                <!-- Error Message Div to display flash messages from Flask -->
+                <div id="error-message" class="text-pink-600 text-center mb-2" style="height: 0.8rem;">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    {{ messages[0] }}
+                    {% endif %}
+                    {% endwith %}
+                </div>
 
                 <!-- Spinner Button -->
                 <button id="submit-btn" type="submit"
@@ -153,22 +159,6 @@
         uploadForm.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Validate file input file extension
-            const files = fileElem.files;
-            console.log(files);
-
-            if (files.length === 0) {
-                showError('! No file selected. Please upload an image.');
-                return;
-            }
-
-            const file = files[0];
-            const validExtensions = ['image/jpeg', 'image/png'];
-            if (!validExtensions.includes(file.type)) {
-                showError('! Invalid file type. Please upload an image (JPEG, PNG).');
-                return;
-            }
-
             // Update button to loading state
             submitBtn.innerHTML = `
                 <div role="status">
@@ -185,15 +175,6 @@
             uploadForm.submit();
         });
 
-        // Function to display error messages
-        function showError(message) {
-            errorMessageDiv.textContent = message;
-
-            // Hide the error message after 3 seconds
-            setTimeout(() => {
-                errorMessageDiv.textContent = '';
-            }, 3000);
-        }
     </script>
 </body>
 

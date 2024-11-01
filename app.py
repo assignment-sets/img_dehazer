@@ -28,11 +28,16 @@ def upload_image():
         return redirect(url_for('home'))
 
     try:
-        # Read the uploaded image
-        img = Image.open(file.stream)
-        img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        # Read the uploaded image as a byte stream
+        file_bytes = np.frombuffer(file.read(), np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-        # Attempt to apply the dehazing function
+        # Check if OpenCV successfully read the image
+        if img is None:
+            flash("Unsupported image format! Please upload a valid image file.")
+            return redirect(url_for('home'))
+
+        # Apply the dehazing function
         dehazed_img = Dehaze.dhazei(img, 0)
 
         # Convert images to base64 strings
@@ -66,6 +71,7 @@ def download_dehazed():
         print(f"Error: {e}")
         return redirect(url_for('home'))
 
+
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(debug=True) # Set debug=False in production
+    app.run(debug=True)  # Set debug=False in production
